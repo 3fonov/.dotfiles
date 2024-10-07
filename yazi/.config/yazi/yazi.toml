@@ -1,0 +1,27 @@
+[manager]
+sort_by = "modified"
+sort_reverse = true
+show_hidden = false
+
+[opener]
+edit = [
+	{ run = 'nvim "$@"', block = true},
+]
+play = [
+	{ run = '/Applications/VLC.app/Contents/MacOS/VLC  "$@"', orphan = true},
+]
+
+[plugin]
+prepend_previewers = [
+  { name = "*.md", run = "glow" },
+	{ mime = "text/csv", run = "miller"},
+]
+[[plugin.prepend_fetchers]]
+id   = "git"
+name = "*"
+run  = "git"
+
+[[plugin.prepend_fetchers]]
+id   = "git"
+name = "*/"
+run  = "git"

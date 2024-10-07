@@ -1,0 +1,4 @@
+[[manager.prepend_keymap]]
+on   = [ "g", "p" ]
+run  = "cd ~/Documents/1_Projects/"
+desc = "Cd to Projects"

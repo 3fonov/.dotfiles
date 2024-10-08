@@ -42,3 +42,13 @@ vim.keymap.set('n', "<leader>rl", "<cmd>Rest run last<cr>")
 -- Oil Nvim
 --
 vim.keymap.set('n','-',"<cmd>lua require('oil').open()<cr>")
+
+-- Neogit
+--
+--local neogit = require('neogit')
+vim.keymap.set('n','<leader>gs', ":Neogit<CR>",{silent=true, noremap=true})
+vim.keymap.set('n','<leader>gc',":Neogit commit<CR>",{silent=true, noremap=true})
+vim.keymap.set('n','<leader>gp',":Neogit pull<CR>",{silent=true, noremap=true})
+vim.keymap.set('n','<leader>gP',":Neogit push<CR>",{silent=true, noremap=true})
+vim.keymap.set('n','<leader>gb',":Telescope git_branches<CR>",{silent=true, noremap=true})
+vim.keymap.set('n','<leader>gB',":G blame<CR>",{silent=true, noremap=true})

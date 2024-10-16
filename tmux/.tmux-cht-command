@@ -1,4 +1,6 @@
 find
+curl
+go
 man
 tldr
 sed

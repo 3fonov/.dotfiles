@@ -62,7 +62,7 @@ function Plugin.config()
   require('mason-lspconfig').setup({
     ensure_installed = {
       'eslint',
-      'tsserver',
+      'ts_ls',
       'html',
       'cssls',
       'lua_ls',
@@ -75,8 +75,8 @@ function Plugin.config()
           capabilities = lsp_capabilities,
         })
       end,
-      ['tsserver'] = function()
-        lspconfig.tsserver.setup({
+      ['ts_ls'] = function()
+        lspconfig.ts_ls.setup({
           capabilities = lsp_capabilities,
           settings = {
             completions = {

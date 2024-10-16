@@ -1,7 +1,8 @@
 local Plugin = {'nvim-treesitter/nvim-treesitter'}
 
 Plugin.dependencies = {
-  {'nvim-treesitter/nvim-treesitter-textobjects'}
+  {'nvim-treesitter/nvim-treesitter-textobjects'},
+  {'nvim-treesitter/nvim-treesitter-context'}
 }
 
 -- See :help nvim-treesitter-modules
@@ -27,6 +28,7 @@ Plugin.opts = {
     'typescript',
     'tsx',
     'lua',
+    'go',
     'vim',
     'vimdoc',
     'css',

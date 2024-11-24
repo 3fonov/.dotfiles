@@ -4,6 +4,7 @@ Plugin = {
 		-- Configure nvim-lint for SQLFluff
 		local lint = require('lint')
 
+		lint.enabled = false;
 		-- Customize dialect as necessary for you
 --		lint.linters.sqlfluff.args = { "lint", "--format=json", "-" }
 -- lint.linters.sqlfluff.stdin = true

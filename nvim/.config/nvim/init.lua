@@ -8,6 +8,7 @@ load('user.commands')
 load('user.keymaps')
 load('user.autocmds')
 require('user.plugins')
+require('dbt-nvim').setup()
 
 pcall(vim.cmd.colorscheme, 'catppuccin-frappe')
 require('langmapper').automapping({ global = true, buffer = true })

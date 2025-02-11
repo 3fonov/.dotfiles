@@ -1,0 +1,35 @@
+#!/bin/bash
+# This script gracefully closes tmux sessions that haven't been activated in the last week.
+
+# Get the current epoch time (in seconds)
+current_time=$(date +%s)
+
+# Define the inactivity threshold (7 days in seconds)
+threshold=604800
+
+# List all tmux sessions with a custom delimiter (|) separating the session name and last attached time.
+tmux list-sessions -F "#{session_name}|#{session_last_attached}" | while IFS='|' read -r session last_attached; do
+    # Check if last_attached is a valid number; if not, treat it as never attached.
+    if ! [[ "$last_attached" =~ ^[0-9]+$ ]]; then
+        echo "Session '$session' has an invalid last attached time ('$last_attached'). Treating as never attached."
+        last_attached=0
+    fi
+
+    # If the session was never attached (last_attached is 0), treat it as inactive.
+    if [ "$last_attached" -eq 0 ]; then
+        echo "Session '$session' has never been attached. Treating it as inactive."
+        # Force inactivity to be above the threshold.
+        last_attached=$(( current_time - threshold - 1 ))
+    fi
+
+    # Calculate the inactivity period of the session
+    inactivity=$(( current_time - last_attached ))
+    
+    # If the inactivity period is greater than or equal to the threshold, kill the session.
+    if [ "$inactivity" -ge "$threshold" ]; then
+        echo "Killing session '$session' (last attached: $last_attached, inactivity: ${inactivity} seconds)"
+        tmux kill-session -t "$session"
+    else
+        echo "Keeping session '$session' (last attached: $last_attached, inactivity: ${inactivity} seconds)"
+    fi
+done

@@ -3,11 +3,11 @@
 # Function to generate a secure random password
 generate_password() {
     local length=$1
-    # Define the character set: letters, numbers, underscores, and hyphens
-		local charset="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-="
+    # Define the character set: letters, numbers, underscores, equal signs, and hyphens
+    local charset="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_=-"
 
     # Use /dev/urandom to generate secure random bytes, then filter using the charset
-    password=$(cat /dev/urandom | tr -dc "$charset" | head -c "$length")
+    password=$(LC_ALL=C tr -dc "$charset" < /dev/urandom | head -c "$length")
     echo "$password"
 }
 

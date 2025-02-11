@@ -1,0 +1,22 @@
+#!/bin/bash
+# This script removes files from the Downloads folder if they were either created or modified more than 3 weeks (21 days) ago.
+# It keeps folders intact.
+
+# Define the Downloads directory and calculate the threshold time (3 weeks ago in seconds).
+DOWNLOADS_DIR="$HOME/Downloads"
+THREE_WEEKS_SECONDS=1814400  # 21 days * 86400 seconds/day
+CURRENT_TIME=$(date +%s)
+THRESHOLD=$(($CURRENT_TIME - $THREE_WEEKS_SECONDS))
+
+# Iterate over each file (recursively) in the Downloads folder.
+find "$DOWNLOADS_DIR" -type f | while IFS= read -r file; do
+    # Obtain creation and modification times (in seconds since epoch).
+    creation_time=$(stat -f %B "$file")
+    modification_time=$(stat -f %m "$file")
+    
+    # If either the creation time or the modification time is older than 3 weeks ago, remove the file.
+    if [ "$creation_time" -lt "$THRESHOLD" ] && [ "$modification_time" -lt "$THRESHOLD" ]; then
+        echo "Deleting file: $file"
+        rm "$file"
+    fi
+done

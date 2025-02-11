@@ -1,16 +1,10 @@
-local Plugin = {'tpope/vim-surround'}
+local Plugin = { "kylechui/nvim-surround", }
 
-Plugin.keys = {
-  'ds',
-  'cs',
-  'cS',
-  'ys',
-  'yS',
-  'yss',
-  'ySs',
-  'ySS',
-  {'S', mode = 'x'},
-  {'gS', mode = 'x'},
-}
-
+Plugin.version = "*" -- Use for stability; omit to use `main` branch for the latest features
+Plugin.event = "VeryLazy"
+Plugin.config = function()
+	require("nvim-surround").setup({
+		-- Configuration here, or leave empty to use defaults
+	})
+end
 return Plugin

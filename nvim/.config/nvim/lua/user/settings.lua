@@ -16,3 +16,6 @@ vim.g.loaded_netrwPlugin = 1
 vim.opt.termguicolors = true
 vim.wo.wrap = false
 vim.g.lint_debug = true
+
+vim.o.path = vim.o.path .. ",models/**"
+vim.o.suffixesadd = ".sql"

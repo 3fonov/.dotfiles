@@ -80,3 +80,7 @@ vim.keymap.set('v', '<A-k>', ':MoveBlock(-1)<CR>', opts)
 vim.keymap.set('v', '<A-h>', ':MoveHBlock(-1)<CR>', opts)
 vim.keymap.set('v', '<A-l>', ':MoveHBlock(1)<CR>', opts)
 
+
+-- Typograf
+
+-- vim.keymap.set("v", "<leader>ty", function() require("typograf").typograf() end, { desc = "Типографировать текст" })

@@ -5,6 +5,7 @@ export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES
 export DBT_PRODUCT_PATH=/Users/vladimir/Documents/1_Projects/product
 export GRPC_PYTHON_BUILD_SYSTEM_OPENSSL=1
 export GRPC_PYTHON_BUILD_SYSTEM_ZLIB=1
+export HIDE_STACK_TRACE=1
 export WORKON_HOME=~/Envs
 export ZSH="$HOME/.oh-my-zsh"
 export ZSH_THEME="powerlevel9k/powerlevel9k"

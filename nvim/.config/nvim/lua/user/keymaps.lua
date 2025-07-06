@@ -11,6 +11,7 @@ vim.keymap.set("n", "<C-k>", "<cmd>cnext<CR>zz")
 vim.keymap.set("n", "<C-j>", "<cmd>cprev<CR>zz")
 vim.keymap.set("n", "<leader>k", "<cmd>lnext<CR>zz")
 vim.keymap.set("n", "<leader>j", "<cmd>lprev<CR>zz")
+vim.keymap.set('n', '<leader>q', ':cclose<CR>', { desc = 'Quickfix: close' })
 
 -- Basic clipboard interaction
 vim.keymap.set({ 'n', 'x' }, 'gy', '"+y') -- copy
@@ -67,10 +68,10 @@ vim.keymap.set('n', '<leader>gB', ":G blame<CR>", { silent = true, noremap = tru
 --
 local opts = { noremap = true, silent = true }
 -- Normal-mode commands
-vim.keymap.set('n', '<A-j>', ':MoveLine(1)<CR>', opts)
-vim.keymap.set('n', '<A-k>', ':MoveLine(-1)<CR>', opts)
-vim.keymap.set('n', '<A-h>', ':MoveHChar(-1)<CR>', opts)
-vim.keymap.set('n', '<A-l>', ':MoveHChar(1)<CR>', opts)
+vim.keymap.set('n', '<M-j>', ':MoveLine(1)<CR>', opts)
+vim.keymap.set('n', '<M-k>', ':MoveLine(-1)<CR>', opts)
+vim.keymap.set('n', '<M-h>', ':MoveHChar(-1)<CR>', opts)
+vim.keymap.set('n', '<M-l>', ':MoveHChar(1)<CR>', opts)
 vim.keymap.set('n', '<leader>wf', ':MoveWord(1)<CR>', opts)
 vim.keymap.set('n', '<leader>wb', ':MoveWord(-1)<CR>', opts)
 

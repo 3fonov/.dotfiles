@@ -4,8 +4,7 @@
 # Get the current epoch time (in seconds)
 current_time=$(date +%s)
 
-# Define the inactivity threshold (7 days in seconds)
-threshold=432000
+threshold=100000
 
 # List all tmux sessions with a custom delimiter (|) separating the session name and last attached time.
 tmux list-sessions -F "#{session_name}|#{session_last_attached}" | while IFS='|' read -r session last_attached; do

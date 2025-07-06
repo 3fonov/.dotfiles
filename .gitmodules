@@ -1,3 +1,6 @@
 [submodule "private"]
 	path = private
 	url = git@github.com:3fonov/.private_dotfiles.git
+[submodule "raycast/.raycast/script-commands"]
+	path = raycast/.raycast/script-commands
+	url = https://github.com/raycast/script-commands

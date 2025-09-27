@@ -35,6 +35,7 @@ Plugin.opts = {
 		'vimdoc',
 		'css',
 		'json',
+		'python',
 		'graphql',
 		'http',
 		'xml',

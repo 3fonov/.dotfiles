@@ -25,6 +25,7 @@
   "monokai.nvim": { "branch": "master", "commit": "b8bd44d5796503173627d7a1fc51f77ec3a08a63" },
   "move.nvim": { "branch": "main", "commit": "cccbd4ea9049ca5f99f025ffaddb7392359c7d6a" },
   "neogit": { "branch": "master", "commit": "6d1bd94f7fca92a50a892f494920696b5defa8c8" },
+  "none-ls.nvim": { "branch": "main", "commit": "3ce66bc62eb363f19cceeb1fae2e71ea2bede56d" },
   "nvim-cmp": { "branch": "main", "commit": "1e1900b0769324a9675ef85b38f99cca29e203b3" },
   "nvim-lint": { "branch": "master", "commit": "93b8040115c9114dac1047311763bef275e752dc" },
   "nvim-lspconfig": { "branch": "master", "commit": "0a1ac55d7d4ec2b2ed9616dfc5406791234d1d2b" },

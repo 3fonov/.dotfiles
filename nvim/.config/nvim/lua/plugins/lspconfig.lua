@@ -51,6 +51,7 @@ function Plugin.config()
 	lspconfig.emmet_language_server.setup({
 		filetypes = {
 			"html", -- Default supported types
+			"htmldjango",
 			"css",
 			"javascriptreact",
 			"typescriptreact",
@@ -86,6 +87,7 @@ function Plugin.config()
 			'html',
 			'cssls',
 			'lua_ls',
+			'jinja_lsp',
 		},
 		handlers = {
 			-- See :help mason-lspconfig-dynamic-server-setup
@@ -93,6 +95,25 @@ function Plugin.config()
 				-- See :help lspconfig-setup
 				lspconfig[server].setup({
 					capabilities = lsp_capabilities,
+				})
+			end,
+			['cssls'] = function()
+				lspconfig.ts_ls.setup({
+					capabilities = lsp_capabilities,
+					settings = {
+						css = {
+							validate = true,
+							lint = {
+								unknownAtRules = 'ignore',
+							}
+						},
+						scss = {
+							lint = { unknownAtRules = 'ignore' },
+						},
+						less = {
+							lint = { unknownAtRules = 'ignore' },
+						},
+					}
 				})
 			end,
 			['ts_ls'] = function()
@@ -103,6 +124,12 @@ function Plugin.config()
 							completeFunctionCalls = true
 						}
 					}
+				})
+			end,
+			['html'] = function()
+				lspconfig.html.setup({
+					capabilities = lsp_capabilities,
+					filetypes = { "html", "htmldjango" },
 				})
 			end,
 			['lua_ls'] = function()

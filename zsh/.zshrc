@@ -140,6 +140,8 @@ alias ....="cd ../../.."
 alias .....="cd ../../../.."
 alias ......="cd ../../../../.."
 
+
+
 # -----------------------------------------------------------------------------
 # COMPLETIONS: FINAL INITIALIZATION (MUST BE LAST)
 # -----------------------------------------------------------------------------
@@ -167,8 +169,7 @@ zstyle ':completion:*' menu select
 
 # 5a) Poetry (Zsh function-based)
 if (( $+commands[poetry] )); then
-  eval "$(poetry completions zsh)"
+  poetry completions zsh > ~/.zfunc/_poetry
+  autoload -Uz _poetry
 fi
 
-# 5b) DBT (Bash‐style “complete” APIs)
-[[ -f "$HOME/Documents/config/.dbt-completion.bash" ]] && source "$HOME/Documents/config/.dbt-completion.bash"

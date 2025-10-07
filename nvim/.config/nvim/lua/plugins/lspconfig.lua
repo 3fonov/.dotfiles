@@ -3,10 +3,10 @@ local user = {}
 
 Plugin.dependencies = {
 	{ 'hrsh7th/cmp-nvim-lsp' },
-	{ 'williamboman/mason-lspconfig.nvim' },
+	{ 'mason-org/mason-lspconfig.nvim' },
 }
 
-Plugin.cmd = { 'LspInfo', 'LspInstall', 'LspUnInstall' }
+Plugin.cmd = { 'LspInfo', 'LspInstall', 'LspUninstall' }
 
 Plugin.event = { 'BufReadPre', 'BufNewFile' }
 
@@ -47,40 +47,10 @@ function Plugin.init()
 end
 
 function Plugin.config()
-	local lspconfig = require('lspconfig')
-	lspconfig.emmet_language_server.setup({
-		filetypes = {
-			"html", -- Default supported types
-			"htmldjango",
-			"css",
-			"javascriptreact",
-			"typescriptreact",
-			"vue",
-			"svelte",
-			-- Add your custom file extensions here
-			"templ", -- Custom extension
-		},
-		init_options = {
-			html = {
-				options = {
-					-- Additional options, e.g., to customize Emmet
-					["bem.enabled"] = true,
-				},
-			},
-		},
-	})
-	local lsp_capabilities = require('cmp_nvim_lsp').default_capabilities()
+	local capabilities = require('cmp_nvim_lsp').default_capabilities()
 
-	local group = vim.api.nvim_create_augroup('lsp_cmds', { clear = true })
-
-	vim.api.nvim_create_autocmd('LspAttach', {
-		group = group,
-		desc = 'LSP actions',
-		callback = user.on_attach
-	})
-
-	-- See :help mason-lspconfig-settings
 	require('mason-lspconfig').setup({
+		automatic_enable = false,
 		ensure_installed = {
 			'eslint',
 			'ts_ls',
@@ -88,55 +58,77 @@ function Plugin.config()
 			'cssls',
 			'lua_ls',
 			'jinja_lsp',
+			'emmet_language_server',
 		},
-		handlers = {
-			-- See :help mason-lspconfig-dynamic-server-setup
-			function(server)
-				-- See :help lspconfig-setup
-				lspconfig[server].setup({
-					capabilities = lsp_capabilities,
-				})
-			end,
-			['cssls'] = function()
-				lspconfig.ts_ls.setup({
-					capabilities = lsp_capabilities,
-					settings = {
-						css = {
-							validate = true,
-							lint = {
-								unknownAtRules = 'ignore',
-							}
-						},
-						scss = {
-							lint = { unknownAtRules = 'ignore' },
-						},
-						less = {
-							lint = { unknownAtRules = 'ignore' },
-						},
-					}
-				})
-			end,
-			['ts_ls'] = function()
-				lspconfig.ts_ls.setup({
-					capabilities = lsp_capabilities,
-					settings = {
-						completions = {
-							completeFunctionCalls = true
-						}
-					}
-				})
-			end,
-			['html'] = function()
-				lspconfig.html.setup({
-					capabilities = lsp_capabilities,
-					filetypes = { "html", "htmldjango" },
-				})
-			end,
-			['lua_ls'] = function()
-				require('plugins.lsp.lua_ls')
-			end
-		}
 	})
+
+	local group = vim.api.nvim_create_augroup('lsp_cmds', { clear = true })
+
+	vim.api.nvim_create_autocmd('LspAttach', {
+		group = group,
+		desc = 'LSP actions',
+		callback = user.on_attach,
+	})
+
+	local function configure(server, opts)
+		local config = opts and vim.deepcopy(opts) or {}
+		config.capabilities = vim.tbl_deep_extend('force', {}, capabilities, config.capabilities or {})
+		vim.lsp.config(server, config)
+		vim.lsp.enable(server)
+	end
+
+	configure('emmet_language_server', {
+		filetypes = {
+			'html',
+			'htmldjango',
+			'css',
+			'javascriptreact',
+			'typescriptreact',
+			'vue',
+			'svelte',
+			'templ',
+		},
+		init_options = {
+			html = {
+				options = {
+					['bem.enabled'] = true,
+				},
+			},
+		},
+	})
+
+	configure('cssls', {
+		settings = {
+			css = {
+				validate = true,
+				lint = {
+					unknownAtRules = 'ignore',
+				},
+			},
+			scss = {
+				lint = { unknownAtRules = 'ignore' },
+			},
+			less = {
+				lint = { unknownAtRules = 'ignore' },
+			},
+		},
+	})
+
+	configure('ts_ls', {
+		settings = {
+			completions = {
+				completeFunctionCalls = true,
+			},
+		},
+	})
+
+	configure('html', {
+		filetypes = { 'html', 'htmldjango' },
+	})
+
+	configure('lua_ls', require('plugins.lsp.lua_ls'))
+	configure('eslint')
+	configure('jinja_lsp')
 end
 
 function user.on_attach()

@@ -1,0 +1,20 @@
+[limits]
+max_age = 100000
+
+[directories]
+exclude = [
+    "/System",
+    "/Library",
+    "/Applications",
+    "/Volumes",
+    "/private",
+    "/usr",
+    "/bin",
+    "/sbin",
+    "/opt",
+    "/var",
+    "/etc",
+		"*/node_modules/*",
+		"*/go/pkg/*",
+		"Orbstack/*"
+]

@@ -1,10 +1,8 @@
 local Plugin = {'nvim-lualine/lualine.nvim'}
 
 Plugin.name = 'lualine'
-
 Plugin.event = 'VeryLazy'
 
--- See :help lualine.txt
 Plugin.opts = {
   options = {
     theme = 'tokyonight',
@@ -15,6 +13,26 @@ Plugin.opts = {
       statusline = {'NvimTree'}
     }
   },
+
+  sections = {
+    lualine_c = {
+      {
+        function()
+          -- Требуемый компонент: текущий путь в oil.nvim
+          local oil = require("oil")
+          local dir = oil.get_current_dir()
+          if dir then
+            return dir
+          end
+          return ''  -- если это не Oil
+        end,
+        cond = function()
+          -- Показывать ТОЛЬКО когда открыт Oil
+          return vim.bo.filetype == "oil"
+        end
+      },
+    }
+  }
 }
 
 function Plugin.init()

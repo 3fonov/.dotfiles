@@ -50,3 +50,22 @@ vim.api.nvim_create_autocmd({ "BufWritePost", "BufReadPost" }, {
 		require('lint').try_lint()
 	end,
 })
+
+vim.api.nvim_create_autocmd("FileType", {
+	pattern = "markdown",
+	callback = function()
+		-- проверяем, что файл находится в папке Obsidian-вольта
+		local path = vim.fn.expand("%:p")
+		if path:find("~/obs") then
+			vim.opt_local.conceallevel = 2
+			vim.opt_local.concealcursor = "nc"
+		else
+			vim.opt_local.conceallevel = 0
+		end
+    vim.opt_local.wrap = true
+    vim.opt_local.linebreak = true
+    vim.opt_local.breakindent = true
+		vim.opt_local.formatoptions:remove("o")
+		vim.opt_local.formatoptions:append("n")
+	end,
+})

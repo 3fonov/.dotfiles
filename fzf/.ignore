@@ -1,0 +1,21 @@
+# === системные каталоги macOS ===
+/System
+/Library
+/private
+/Applications
+/Volumes
+/opt/homebrew/Cellar
+/opt/homebrew/Frameworks
+
+# === мусорные каталоги проектов ===
+**/node_modules
+**/go/pkg
+**/go/bin
+**/go/src/pkg
+**/vendor
+**/.terraform
+**/__pycache__
+
+# === файлы, которые почти всегда мешают ===
+.DS_Store
+*.log

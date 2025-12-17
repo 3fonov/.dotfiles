@@ -85,3 +85,14 @@ vim.keymap.set('v', '<A-l>', ':MoveHBlock(1)<CR>', opts)
 -- Typograf
 
 -- vim.keymap.set("v", "<leader>ty", function() require("typograf").typograf() end, { desc = "Типографировать текст" })
+vim.keymap.set("n", "<leader>W", function()
+  if vim.wo.wrap then
+    vim.wo.wrap = false
+    vim.wo.linebreak = false
+    print("Wrap OFF")
+  else
+    vim.wo.wrap = true
+    vim.wo.linebreak = true
+    print("Wrap ON (word-safe)")
+  end
+end, { desc = "Toggle word-safe line wrapping" })

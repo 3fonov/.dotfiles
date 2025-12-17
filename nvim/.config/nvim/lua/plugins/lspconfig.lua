@@ -47,88 +47,88 @@ function Plugin.init()
 end
 
 function Plugin.config()
-	local capabilities = require('cmp_nvim_lsp').default_capabilities()
+    local capabilities = require('cmp_nvim_lsp').default_capabilities()
 
-	require('mason-lspconfig').setup({
-		automatic_enable = false,
-		ensure_installed = {
-			'eslint',
-			'ts_ls',
-			'html',
-			'cssls',
-			'lua_ls',
-			'jinja_lsp',
-			'emmet_language_server',
-		},
-	})
+    require('mason-lspconfig').setup({
+        ensure_installed = {
+            'eslint',
+            'ts_ls',
+            'html',
+            'cssls',
+            'lua_ls',
+            'jinja_lsp',
+            'emmet_language_server',
+        },
+    })
 
-	local group = vim.api.nvim_create_augroup('lsp_cmds', { clear = true })
+    local group = vim.api.nvim_create_augroup('lsp_cmds', { clear = true })
 
-	vim.api.nvim_create_autocmd('LspAttach', {
-		group = group,
-		desc = 'LSP actions',
-		callback = user.on_attach,
-	})
+    vim.api.nvim_create_autocmd('LspAttach', {
+        group = group,
+        desc = 'LSP actions',
+        callback = user.on_attach,
+    })
 
-	local function configure(server, opts)
-		local config = opts and vim.deepcopy(opts) or {}
-		config.capabilities = vim.tbl_deep_extend('force', {}, capabilities, config.capabilities or {})
-		vim.lsp.config(server, config)
-		vim.lsp.enable(server)
-	end
+    local function configure(server, opts)
+        local config = opts and vim.deepcopy(opts) or {}
+        config.capabilities = vim.tbl_deep_extend('force', {}, capabilities, config.capabilities or {})
+        config.on_attach = user.on_attach
+        vim.lsp.config(server, config)
+        vim.lsp.enable(server)
+    end
 
-	configure('emmet_language_server', {
-		filetypes = {
-			'html',
-			'htmldjango',
-			'css',
-			'javascriptreact',
-			'typescriptreact',
-			'vue',
-			'svelte',
-			'templ',
-		},
-		init_options = {
-			html = {
-				options = {
-					['bem.enabled'] = true,
-				},
-			},
-		},
-	})
+    configure('emmet_language_server', {
+        filetypes = {
+            'html',
+            'htmldjango',
+            'css',
+            'javascriptreact',
+            'typescriptreact',
+            'vue',
+            'svelte',
+            'templ',
+        },
+        init_options = {
+            html = {
+                options = {
+                    ['bem.enabled'] = true,
+                },
+            },
+        },
+    })
 
-	configure('cssls', {
-		settings = {
-			css = {
-				validate = true,
-				lint = {
-					unknownAtRules = 'ignore',
-				},
-			},
-			scss = {
-				lint = { unknownAtRules = 'ignore' },
-			},
-			less = {
-				lint = { unknownAtRules = 'ignore' },
-			},
-		},
-	})
+    configure('cssls', {
+        settings = {
+            css = {
+                validate = true,
+                lint = {
+                    unknownAtRules = 'ignore',
+                },
+            },
+            scss = {
+                lint = { unknownAtRules = 'ignore' },
+            },
+            less = {
+                lint = { unknownAtRules = 'ignore' },
+            },
+        },
+    })
 
-	configure('ts_ls', {
-		settings = {
-			completions = {
-				completeFunctionCalls = true,
-			},
-		},
-	})
+    configure('ts_ls', {
+        settings = {
+            completions = {
+                completeFunctionCalls = true,
+            },
+        },
+    })
 
-	configure('html', {
-		filetypes = { 'html', 'htmldjango' },
-	})
+    configure('html', {
+        filetypes = { 'html', 'htmldjango' },
+    })
 
-	configure('lua_ls', require('plugins.lsp.lua_ls'))
-	configure('eslint')
-	configure('jinja_lsp')
+    configure('lua_ls', require('plugins.lsp.lua_ls'))
+    configure('eslint')
+    configure('jinja_lsp')
 end
 
 function user.on_attach()

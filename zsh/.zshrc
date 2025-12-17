@@ -137,8 +137,6 @@ y() {
 alias ..="cd .."
 alias ...="cd ../.."
 alias ....="cd ../../.."
-alias .....="cd ../../../.."
-alias ......="cd ../../../../.."
 
 
 
@@ -173,3 +171,46 @@ if (( $+commands[poetry] )); then
   autoload -Uz _poetry
 fi
 
+
+### POETRY HOOK
+#
+#
+# --- Auto-enter Poetry shell when in a folder with pyproject.toml ---
+# Works on: cd, new shells (including new tmux windows), and first prompt.
+# --- Auto-enter Poetry shell when in a folder with pyproject.toml ---
+# Works on: cd and new tmux windows; avoids double entry.
+
+autoload -Uz add-zsh-hook
+
+# Remember last dir we attempted to enter poetry in (per shell)
+typeset -g LAST_POETRY_DIR=""
+
+_poetry_autoenter() {
+  # Only in interactive shells
+  [[ -o interactive ]] || return
+
+  # Allow disabling: export POETRY_AUTO=0
+  if [[ -n "$POETRY_AUTO" && "$POETRY_AUTO" == "0" ]]; then
+    return
+  fi
+
+  # Poetry must exist; project must have pyproject.toml
+  command -v poetry >/dev/null 2>&1 || return
+  [[ -f "$PWD/pyproject.toml" ]] || return
+
+  # If already inside any venv or poetry-managed shell — do nothing
+  [[ -n "$VIRTUAL_ENV" || -n "$POETRY_ACTIVE" ]] && return
+
+  # Debounce: if we already tried in this exact dir, skip
+  if [[ "$PWD" == "$LAST_POETRY_DIR" ]]; then
+    return
+  fi
+  typeset -g LAST_POETRY_DIR="$PWD"
+
+  echo "📦 Entering Poetry shell for $(basename "$PWD")..."
+  poetry shell
+}
+
+# Fire on directory change and before each prompt (covers tmux new windows)
+add-zsh-hook chpwd _poetry_autoenter
+add-zsh-hook precmd _poetry_autoenter

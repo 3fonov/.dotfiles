@@ -1,147 +1,253 @@
 # -----------------------------------------------------------------------------
-# 1. PATH Configuration
+# 1. Core Environment
 # -----------------------------------------------------------------------------
-# Ensure unique entries and let Zsh auto-export PATH
-typeset -U path
+export POETRY_HOME="$HOME/.poetry"
+export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES
+export DBT_PRODUCT_PATH="$HOME/Documents/1_Projects/product"
+export GRPC_PYTHON_BUILD_SYSTEM_OPENSSL=1
+export GRPC_PYTHON_BUILD_SYSTEM_ZLIB=1
+export HIDE_STACK_TRACE=1
+export WORKON_HOME="$HOME/Envs"
+export PYENV_ROOT="$HOME/.pyenv"
+export NVM_DIR="$HOME/.nvm"
+export XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
+export XDG_CACHE_HOME="${XDG_CACHE_HOME:-${ZDOTDIR:-$HOME}/.cache}"
+export PIPX_HOME="$HOME/.local/pipx"
+export PIPX_BIN_DIR="$HOME/.local/bin"
+
+typeset -g ZDOT_ROOT="${ZDOTDIR:-$HOME}"
+typeset -g HOMEBREW_PREFIX=""
+typeset -g ZSH="$HOME/.oh-my-zsh"
+typeset -g ZSH_THEME="${ZSH_THEME:-powerlevel9k/powerlevel9k}"
+typeset -g ZSH_CACHE_DIR="${ZSH_CACHE_DIR:-$XDG_CACHE_HOME/oh-my-zsh}"
+typeset -g ZSH_COMPDUMP="$ZDOT_ROOT/.zcompdump"
+typeset -g ZSH_COMPLETIONS_DIR="$ZDOT_ROOT/.zfunc"
+typeset -g ZSH_DISABLE_COMPFIX=true
+
+if [[ -d /opt/homebrew ]]; then
+  HOMEBREW_PREFIX=/opt/homebrew
+elif [[ -d /usr/local ]]; then
+  HOMEBREW_PREFIX=/usr/local
+elif (( $+commands[brew] )); then
+  HOMEBREW_PREFIX="$(brew --prefix 2>/dev/null)"
+fi
+
+typeset -U path fpath
 path=(
-  $HOME/.cargo/bin
-  /opt/homebrew/bin           # Homebrew on Apple Silicon
-  /usr/local/bin              # (Intel & some tools)
+  "$HOME/.cargo/bin"
+  "$PYENV_ROOT/bin"
+  "$PIPX_BIN_DIR"
+  "$HOME/.local/bin"
+  "$HOME/go/bin"
+  /usr/local/go/bin
   /usr/bin
   /bin
   /usr/sbin
   /sbin
-  $HOME/.local/bin
+  /usr/local/bin
   /usr/local/sbin
+  /opt/homebrew/bin
   /opt/homebrew/sbin
-  /usr/local/go/bin
-	$HOME/.local/pipx
-  $HOME/go/bin                # Go workspace
   /opt/homebrew/opt/sphinx-doc/bin
 )
 
+[[ -n "$HOMEBREW_PREFIX" && -d "$HOMEBREW_PREFIX/share/zsh-completions" ]] && \
+  fpath=("$HOMEBREW_PREFIX/share/zsh-completions" $fpath)
+[[ -d "$ZSH_COMPLETIONS_DIR" ]] && fpath=("$ZSH_COMPLETIONS_DIR" $fpath)
 
 # -----------------------------------------------------------------------------
-# 2. Environment Variables
+# 2. Helpers
 # -----------------------------------------------------------------------------
-export POETRY_HOME="$HOME/.poetry"                     # Poetry installer
-export DYLD_LIBRARY_PATH="/usr/local/mysql/lib"        # MySQL on macOS
-export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES         # Fix for Python multiprocessing on macOS
-export DBT_PRODUCT_PATH="$HOME/Documents/1_Projects/product"
-export GRPC_PYTHON_BUILD_SYSTEM_OPENSSL=1
-export GRPC_PYTHON_BUILD_SYSTEM_ZLIB=1
-export HIDE_STACK_TRACE=1                               # Custom debug flag
-export WORKON_HOME="$HOME/Envs"                         # virtualenvwrapper dir
-export PYENV_ROOT="$HOME/.pyenv"                        # pyenv installs
-export NVM_DIR="$HOME/.nvm"                             # nvm installs
-export XDG_CONFIG_HOME="$HOME/.config"
-export PIPX_HOME="$HOME/.local/pipx"
-export PIPX_BIN_DIR="$HOME/.local/bin"
+is_tty_session() {
+  [[ -o interactive && -t 0 && -t 1 ]]
+}
+
+source_if_exists() {
+  [[ -r "$1" ]] && source "$@"
+}
+
+with_mysql_libs() {
+  local mysql_lib_dir="/usr/local/mysql/lib"
+  if [[ -d "$mysql_lib_dir" ]]; then
+    DYLD_LIBRARY_PATH="$mysql_lib_dir${DYLD_LIBRARY_PATH:+:$DYLD_LIBRARY_PATH}" "$@"
+  else
+    "$@"
+  fi
+}
+
+prepend_path_if_dir() {
+  [[ -d "$1" ]] && path=("$1" $path)
+}
+
+lazy_wrap_commands() {
+  local loader="$1"
+  shift
+
+  local cmd
+  for cmd in "$@"; do
+    eval "
+${cmd}() {
+  unfunction ${cmd}
+  ${loader} || return \$?
+  ${cmd} \"\$@\"
+}
+"
+  done
+}
+
+poetry_completion_setup() {
+  (( $+commands[poetry] )) || return
+
+  local completion_file="$ZSH_COMPLETIONS_DIR/_poetry"
+
+  [[ -d "$ZSH_COMPLETIONS_DIR" ]] || mkdir -p "$ZSH_COMPLETIONS_DIR"
+  fpath=("$ZSH_COMPLETIONS_DIR" $fpath)
+
+  if [[ ! -f "$completion_file" || "${commands[poetry]}" -nt "$completion_file" ]]; then
+    poetry completions zsh >| "$completion_file" 2>/dev/null || return
+  fi
+}
+
+poetry_autoenter() {
+  [[ -o interactive ]] || return
+  [[ "${POETRY_AUTO:-1}" != "0" ]] || return
+  (( $+commands[poetry] )) || return
+  [[ -f "$PWD/pyproject.toml" ]] || return
+  [[ -n "$VIRTUAL_ENV" || -n "$POETRY_ACTIVE" ]] && return
+
+  if [[ "$PWD" == "$LAST_POETRY_DIR" ]]; then
+    return
+  fi
+  typeset -g LAST_POETRY_DIR="$PWD"
+
+  local activate_cmd=""
+  activate_cmd="$(poetry env activate 2>/dev/null)" || activate_cmd=""
+  if [[ -n "$activate_cmd" ]]; then
+    print -r -- "Activating Poetry environment for ${PWD:t}"
+    eval "$activate_cmd"
+    return
+  fi
+
+  print -r -- "Entering Poetry shell for ${PWD:t}"
+  poetry shell
+}
+
+load_nvm() {
+  (( ${+_lazy_nvm_loaded} )) && return 0
+  typeset -g _lazy_nvm_loaded=1
+
+  source_if_exists "$NVM_DIR/nvm.sh" --no-use || return 1
+  source_if_exists "$NVM_DIR/bash_completion"
+}
+
+load_nvm_runtime() {
+  load_nvm || return $?
+
+  if (( ! $+commands[node] )) && (( $+functions[nvm] )); then
+    nvm use --silent default >/dev/null 2>&1 || nvm use --silent >/dev/null 2>&1 || true
+  fi
+}
+
+load_virtualenvwrapper() {
+  (( ${+_lazy_virtualenvwrapper_loaded} )) && return 0
+  typeset -g _lazy_virtualenvwrapper_loaded=1
+
+  (( $+commands[virtualenvwrapper.sh] )) || return 1
+  source "${commands[virtualenvwrapper.sh]}"
+}
+
+load_yandex_cloud_support() {
+  (( ${+_lazy_yandex_cloud_loaded} )) && return 0
+  typeset -g _lazy_yandex_cloud_loaded=1
+
+  source_if_exists "$HOME/yandex-cloud/completion.zsh.inc"
+}
+
+load_google_cloud_support() {
+  (( ${+_lazy_google_cloud_loaded} )) && return 0
+  typeset -g _lazy_google_cloud_loaded=1
+
+  source_if_exists "$HOME/google-cloud-sdk/completion.zsh.inc"
+}
 
 # -----------------------------------------------------------------------------
-# 3. Completions Bootstrap
+# 3. Completion Setup
 # -----------------------------------------------------------------------------
-# Initialize native completion before sourcing any third-party completion scripts.
-if (( $+commands[brew] )); then
-  bprefix=$(brew --prefix)
-  [[ -d "$bprefix/share/zsh-completions" ]] && fpath=($bprefix/share/zsh-completions $fpath)
-fi
-[[ -d "$HOME/.zfunc" ]] && fpath=($HOME/.zfunc $fpath)
-
-autoload -Uz compinit
-compinit -u
-
-autoload -Uz bashcompinit
-bashcompinit
+zstyle ':completion:*' menu select
+poetry_completion_setup
 
 # -----------------------------------------------------------------------------
-# 4. Oh My Zsh & Prompt Theme
+# 4. Prompt and Framework
 # -----------------------------------------------------------------------------
-export ZSH="$HOME/.oh-my-zsh"
-ZSH_THEME="powerlevel9k/powerlevel9k"                   # consider upgrading to powerlevel10k
-plugins=()
-
-# Prompt elements
 POWERLEVEL9K_LEFT_PROMPT_ELEMENTS=(dir rbenv vcs)
 POWERLEVEL9K_RIGHT_PROMPT_ELEMENTS=(status root_indicator background_jobs)
 POWERLEVEL9K_PROMPT_ON_NEWLINE=true
 POWERLEVEL9K_MULTILINE_FIRST_PROMPT_PREFIX="%f"
 
-# Detect if root to adjust prompt symbol
-user_symbol='$'
-if [[ $(print -P "%#") == "#" ]]; then
-  user_symbol='#'
-fi
-
+typeset -g user_symbol='$'
+[[ $(print -P "%#") == "#" ]] && user_symbol='#'
 POWERLEVEL9K_MULTILINE_LAST_PROMPT_PREFIX="%{%B%F{black}%K{yellow}%} $user_symbol%{%b%f%k%F{yellow}%} %{%f%}"
 
-# Load Oh My Zsh after theme configuration so Powerlevel9k can build the prompt.
-source "$ZSH/oh-my-zsh.sh"
-
-
-
-# -----------------------------------------------------------------------------
-# 5. Python Virtual Environments
-# -----------------------------------------------------------------------------
-# virtualenvwrapper
-source virtualenvwrapper.sh
-
-# pyenv shim (ensure before PATH modifications if using `pyenv global`)
-if [[ -d "$PYENV_ROOT/bin" ]]; then
-  path=($PYENV_ROOT/bin $path)
+[[ -d "$ZSH_CACHE_DIR" ]] || mkdir -p "$ZSH_CACHE_DIR"
+if [[ -r "$ZSH/oh-my-zsh.sh" ]]; then
+  source "$ZSH/oh-my-zsh.sh"
+else
+  autoload -Uz compinit
+  compinit -d "$ZSH_COMPDUMP"
 fi
 
+# -----------------------------------------------------------------------------
+# 5. Language Managers and Tooling
+# -----------------------------------------------------------------------------
+if (( $+commands[virtualenvwrapper.sh] )); then
+  lazy_wrap_commands load_virtualenvwrapper \
+    add2virtualenv allvirtualenv cdproject cdsitepackages cdvirtualenv cpvirtualenv \
+    lssitepackages lsvirtualenv mkproject mktmpenv mkvirtualenv rmvirtualenv \
+    setvirtualenvproject showvirtualenv toggleglobalsitepackages wipeenv workon
+fi
+
+prepend_path_if_dir "$HOME/yandex-cloud/bin"
+prepend_path_if_dir "$HOME/google-cloud-sdk/bin"
+(( $+commands[yc] )) && lazy_wrap_commands load_yandex_cloud_support yc
+(( $+commands[gcloud] )) && lazy_wrap_commands load_google_cloud_support gcloud
+(( $+commands[gsutil] )) && lazy_wrap_commands load_google_cloud_support gsutil
+(( $+commands[bq] )) && lazy_wrap_commands load_google_cloud_support bq
+
+if [[ -n "$HOMEBREW_PREFIX" ]]; then
+  source_if_exists "$HOMEBREW_PREFIX/opt/chruby/share/chruby/chruby.sh"
+  source_if_exists "$HOMEBREW_PREFIX/opt/chruby/share/chruby/auto.sh"
+  (( $+functions[chruby] )) && chruby ruby-3.1.3
+fi
+
+if is_tty_session; then
+  source_if_exists "$HOME/.fzf.zsh"
+fi
+
+[[ -d "$NVM_DIR" ]] && lazy_wrap_commands load_nvm nvm
+[[ -d "$NVM_DIR" ]] && lazy_wrap_commands load_nvm_runtime node npm npx corepack pnpm yarn
+
+if is_tty_session && [[ -n "$HOMEBREW_PREFIX" ]]; then
+  source_if_exists "$HOMEBREW_PREFIX/share/zsh-autosuggestions/zsh-autosuggestions.zsh"
+fi
+
+if (( $+commands[direnv] )); then
+  eval "$(direnv hook zsh)"
+fi
 
 # -----------------------------------------------------------------------------
-# 6. Cloud SDKs & CLIs
+# 6. Aliases, Functions, and Hooks
 # -----------------------------------------------------------------------------
-# Yandex Cloud
-[[ -f "$HOME/yandex-cloud/path.bash.inc" ]]       && source "$HOME/yandex-cloud/path.bash.inc"
-[[ -f "$HOME/yandex-cloud/completion.zsh.inc" ]]   && source "$HOME/yandex-cloud/completion.zsh.inc"
+if is_tty_session; then
+  bindkey -s '^f' "~/.local/bin/tmux-sessionizr\n"
+fi
 
-# Google Cloud SDK
-[[ -f "$HOME/google-cloud-sdk/path.zsh.inc" ]]    && source "$HOME/google-cloud-sdk/path.zsh.inc"
-[[ -f "$HOME/google-cloud-sdk/completion.zsh.inc" ]] && source "$HOME/google-cloud-sdk/completion.zsh.inc"
+v() {
+  nvim "$@"
+}
 
-
-# -----------------------------------------------------------------------------
-# 7. Ruby via chruby
-# -----------------------------------------------------------------------------
-source /opt/homebrew/opt/chruby/share/chruby/chruby.sh
-source /opt/homebrew/opt/chruby/share/chruby/auto.sh
-chruby ruby-3.1.3                                    # pin default Ruby version
-
-
-# -----------------------------------------------------------------------------
-# 8. Utilities & Plugins
-# -----------------------------------------------------------------------------
-# fzf fuzzy finder
-[[ -f ~/.fzf.zsh ]] && source ~/.fzf.zsh
-
-# zoxide quick directory jumper
-eval "$(zoxide init --cmd cd zsh)"
-
-# nvm (Node Version Manager)
-[[ -s "$NVM_DIR/nvm.sh" ]]     && source "$NVM_DIR/nvm.sh"
-[[ -s "$NVM_DIR/bash_completion" ]] && source "$NVM_DIR/bash_completion"
-
-# Autosuggestions
-source "$(brew --prefix)/share/zsh-autosuggestions/zsh-autosuggestions.zsh"
-
-eval "$(direnv hook zsh)"
-
-# -----------------------------------------------------------------------------
-# 9. Aliases & Functions
-# -----------------------------------------------------------------------------
-# Tmux session launcher
-bindkey -s '^f' "~/.local/bin/tmux-sessionizr\n"
-
-# Quick edit with Neovim
-v() { nvim "$@"; }
-
-# Yazi workspace-aware navigation
 y() {
-  local tmp=$(mktemp -t yazi-cwd.XXXXXX)
+  local tmp
+  tmp="$(mktemp -t yazi-cwd.XXXXXX)"
   yazi "$@" --cwd-file="$tmp"
   if [[ -s "$tmp" ]]; then
     cd "$(cat "$tmp")"
@@ -149,67 +255,17 @@ y() {
   rm -f "$tmp"
 }
 
-# Load any additional secrets or keys (be cautious!)
-[[ -f ~/.keys ]] && source ~/.keys
+[[ -f "$HOME/.keys" ]] && source "$HOME/.keys"
 
-# Dirs
 alias ..="cd .."
 alias ...="cd ../.."
 alias ....="cd ../../.."
 
-
-
-# -----------------------------------------------------------------------------
-# 10. Completion Customization
-# -----------------------------------------------------------------------------
-zstyle ':completion:*' menu select
-
-# Poetry (Zsh function-based)
-if (( $+commands[poetry] )); then
-  poetry completions zsh > ~/.zfunc/_poetry
-  autoload -Uz _poetry
-fi
-
-
-### POETRY HOOK
-#
-#
-# --- Auto-enter Poetry shell when in a folder with pyproject.toml ---
-# Works on: cd, new shells (including new tmux windows), and first prompt.
-# --- Auto-enter Poetry shell when in a folder with pyproject.toml ---
-# Works on: cd and new tmux windows; avoids double entry.
-
 autoload -Uz add-zsh-hook
-
-# Remember last dir we attempted to enter poetry in (per shell)
 typeset -g LAST_POETRY_DIR=""
+add-zsh-hook chpwd poetry_autoenter
+poetry_autoenter
 
-_poetry_autoenter() {
-  # Only in interactive shells
-  [[ -o interactive ]] || return
-
-  # Allow disabling: export POETRY_AUTO=0
-  if [[ -n "$POETRY_AUTO" && "$POETRY_AUTO" == "0" ]]; then
-    return
-  fi
-
-  # Poetry must exist; project must have pyproject.toml
-  command -v poetry >/dev/null 2>&1 || return
-  [[ -f "$PWD/pyproject.toml" ]] || return
-
-  # If already inside any venv or poetry-managed shell — do nothing
-  [[ -n "$VIRTUAL_ENV" || -n "$POETRY_ACTIVE" ]] && return
-
-  # Debounce: if we already tried in this exact dir, skip
-  if [[ "$PWD" == "$LAST_POETRY_DIR" ]]; then
-    return
-  fi
-  typeset -g LAST_POETRY_DIR="$PWD"
-
-  echo "📦 Entering Poetry shell for $(basename "$PWD")..."
-  poetry shell
-}
-
-# Fire on directory change and before each prompt (covers tmux new windows)
-add-zsh-hook chpwd _poetry_autoenter
-add-zsh-hook precmd _poetry_autoenter
+if (( $+commands[zoxide] )); then
+  eval "$(zoxide init --cmd cd zsh)"
+fi

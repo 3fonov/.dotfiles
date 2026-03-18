@@ -39,7 +39,23 @@ export PIPX_HOME="$HOME/.local/pipx"
 export PIPX_BIN_DIR="$HOME/.local/bin"
 
 # -----------------------------------------------------------------------------
-# 3. Oh My Zsh & Prompt Theme
+# 3. Completions Bootstrap
+# -----------------------------------------------------------------------------
+# Initialize native completion before sourcing any third-party completion scripts.
+if (( $+commands[brew] )); then
+  bprefix=$(brew --prefix)
+  [[ -d "$bprefix/share/zsh-completions" ]] && fpath=($bprefix/share/zsh-completions $fpath)
+fi
+[[ -d "$HOME/.zfunc" ]] && fpath=($HOME/.zfunc $fpath)
+
+autoload -Uz compinit
+compinit -u
+
+autoload -Uz bashcompinit
+bashcompinit
+
+# -----------------------------------------------------------------------------
+# 4. Oh My Zsh & Prompt Theme
 # -----------------------------------------------------------------------------
 export ZSH="$HOME/.oh-my-zsh"
 ZSH_THEME="powerlevel9k/powerlevel9k"                   # consider upgrading to powerlevel10k
@@ -141,31 +157,11 @@ alias ....="cd ../../.."
 
 
 # -----------------------------------------------------------------------------
-# COMPLETIONS: FINAL INITIALIZATION (MUST BE LAST)
+# 10. Completion Customization
 # -----------------------------------------------------------------------------
-
-# 1) Assemble fpath entries before init:
-if (( $+commands[brew] )); then
-  local bprefix=$(brew --prefix)
-  [[ -d "$bprefix/share/zsh-completions" ]] && fpath=($bprefix/share/zsh-completions $fpath)
-fi
-[[ -d "$HOME/.zfunc" ]] && fpath=($HOME/.zfunc $fpath)
-
-# 2) Initialize Zsh’s native completion system exactly once:
-rm -f ~/.zcompdump*            # force fresh rebuild
-autoload -Uz compinit
-compinit -u                    # skip insecure-dir warnings if you’ve fixed perms
-
-# 3) Enable Bash‐style completions under zsh (for .bash_completion scripts):
-autoload -Uz bashcompinit
-bashcompinit
-
-# 4) Configure the UI:
 zstyle ':completion:*' menu select
 
-# 5) Source any completion scripts now that both compinit & bashcompinit are active:
-
-# 5a) Poetry (Zsh function-based)
+# Poetry (Zsh function-based)
 if (( $+commands[poetry] )); then
   poetry completions zsh > ~/.zfunc/_poetry
   autoload -Uz _poetry

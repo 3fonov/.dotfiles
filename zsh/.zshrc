@@ -59,6 +59,7 @@ bashcompinit
 # -----------------------------------------------------------------------------
 export ZSH="$HOME/.oh-my-zsh"
 ZSH_THEME="powerlevel9k/powerlevel9k"                   # consider upgrading to powerlevel10k
+plugins=()
 
 # Prompt elements
 POWERLEVEL9K_LEFT_PROMPT_ELEMENTS=(dir rbenv vcs)
@@ -73,7 +74,9 @@ if [[ $(print -P "%#") == "#" ]]; then
 fi
 
 POWERLEVEL9K_MULTILINE_LAST_PROMPT_PREFIX="%{%B%F{black}%K{yellow}%} $user_symbol%{%b%f%k%F{yellow}%} %{%f%}"
-PROMPT='%(?.%F{green}√.%F{red}?%?)%f %B%1~%f%b %# '
+
+# Load Oh My Zsh after theme configuration so Powerlevel9k can build the prompt.
+source "$ZSH/oh-my-zsh.sh"
 
 
 

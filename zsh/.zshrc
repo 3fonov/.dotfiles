@@ -53,6 +53,8 @@ path=(
 
 [[ -n "$HOMEBREW_PREFIX" && -d "$HOMEBREW_PREFIX/share/zsh-completions" ]] && \
   fpath=("$HOMEBREW_PREFIX/share/zsh-completions" $fpath)
+[[ -n "$HOMEBREW_PREFIX" && -d "$HOMEBREW_PREFIX/share/zsh/site-functions" ]] && \
+  fpath=("$HOMEBREW_PREFIX/share/zsh/site-functions" $fpath)
 [[ -d "$ZSH_COMPLETIONS_DIR" ]] && fpath=("$ZSH_COMPLETIONS_DIR" $fpath)
 
 # -----------------------------------------------------------------------------
@@ -269,3 +271,6 @@ poetry_autoenter
 if (( $+commands[zoxide] )); then
   eval "$(zoxide init --cmd cd zsh)"
 fi
+
+# opencode
+export PATH=/Users/vladimir/.opencode/bin:$PATH

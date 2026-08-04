@@ -1,0 +1,53 @@
+#!/bin/zsh
+
+set -euo pipefail
+
+OUTPUT="${1:-timelapse.mp4}"
+FPS=30
+FRAMES_PER_IMAGE=2
+
+files=(_MG_*.(jpg|jpeg|JPG|JPEG)(N.))
+
+if (( ${#files[@]} == 0 )); then
+    print -u2 "Error: no _MG_*.jpg files found in:"
+    print -u2 "$PWD"
+    exit 1
+fi
+
+TMP="$(mktemp)"
+
+cleanup() {
+    rm -f "$TMP"
+}
+
+trap cleanup EXIT INT TERM
+
+for file in "${files[@]}"; do
+    absolute_path="${file:A}"
+    escaped_path="${absolute_path//\'/\'\\\'\'}"
+    print -r -- "file '$escaped_path'" >> "$TMP"
+done
+
+COUNT=${#files[@]}
+
+print "Found $COUNT images"
+print "First image: ${files[1]}"
+print "Last image:  ${files[-1]}"
+
+ffmpeg \
+    -hide_banner \
+    -f concat \
+    -safe 0 \
+    -i "$TMP" \
+    -vf "setpts=N*${FRAMES_PER_IMAGE}/(${FPS}*TB)" \
+    -r "$FPS" \
+    -frames:v $((COUNT * FRAMES_PER_IMAGE)) \
+    -c:v libx264 \
+    -preset slow \
+    -crf 18 \
+    -pix_fmt yuv420p \
+    -movflags +faststart \
+    -y \
+    "$OUTPUT"
+
+print "Done: ${OUTPUT:A}"

@@ -39,6 +39,9 @@ path=(
   "$PIPX_BIN_DIR"
   "$HOME/.local/bin"
   "$HOME/go/bin"
+  /opt/homebrew/bin
+  /opt/homebrew/sbin
+  /opt/homebrew/opt/sphinx-doc/bin
   /usr/local/go/bin
   /usr/bin
   /bin
@@ -46,9 +49,6 @@ path=(
   /sbin
   /usr/local/bin
   /usr/local/sbin
-  /opt/homebrew/bin
-  /opt/homebrew/sbin
-  /opt/homebrew/opt/sphinx-doc/bin
 )
 
 [[ -n "$HOMEBREW_PREFIX" && -d "$HOMEBREW_PREFIX/share/zsh-completions" ]] && \
@@ -274,3 +274,8 @@ fi
 
 # opencode
 export PATH=/Users/vladimir/.opencode/bin:$PATH
+
+export STM32_PRG_PATH=/Applications/STMicroelectronics/STM32Cube/STM32CubeProgrammer/STM32CubeProgrammer.app/Contents/Resources/bin
+
+# Added by cua-driver-rs installer — see https://github.com/trycua/cua
+export PATH="/Users/vladimir/.local/bin:$PATH"

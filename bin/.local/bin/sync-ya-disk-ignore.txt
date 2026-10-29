@@ -1,0 +1,149 @@
+# macOS / OS junk
+**/.DS_Store
+**/Desktop.ini
+**/Thumbs.db
+
+# Git metadata
+**/.git/**
+.git/**
+
+# Secrets / local environment
+**/.env
+**/.env.*
+**/.envrc
+
+# Python virtual environments
+**/.venv/**
+**/venv/**
+**/venv*/**
+**/env/**
+**/env*/**
+**/ENV/**
+**/pipenv/**
+**/dbt-env/**
+**/dbt_env/**
+
+# Python caches / generated metadata
+**/__pycache__/**
+**/*.py[cod]
+**/*$py.class
+**/.pytest_cache/**
+**/.mypy_cache/**
+**/.ruff_cache/**
+**/.pytype/**
+**/.pyre/**
+**/.hypothesis/**
+**/.tox/**
+**/.nox/**
+**/.ipynb_checkpoints/**
+**/.eggs/**
+**/*.egg-info/**
+**/develop-eggs/**
+**/htmlcov/**
+**/.coverage
+**/.coverage.*
+**/coverage.xml
+**/pytestdebug.log
+**/.failed-tests
+
+# Node / JS dependencies and caches
+**/node_modules/**
+**/.node_modules/**
+**/bower_components/**
+**/jspm_packages/**
+**/web_modules/**
+**/.npm/**
+**/.yarn/cache/**
+**/.yarn/unplugged/**
+**/.yarn/build-state.yml
+**/.yarn/install-state.gz
+**/.pnpm-debug.log*
+**/npm-debug.log*
+**/yarn-debug.log*
+**/yarn-error.log*
+**/.parcel-cache/**
+**/.turbo/**
+**/.vite/**
+**/.nuxt/**
+**/.next/**
+**/.docusaurus/**
+**/.vuepress/dist/**
+
+# IDE / editor local state
+**/.idea/**
+**/.vscode/**
+**/.vscode-test/**
+**/*.sublime-workspace
+**/*.swp
+**/*.swo
+**/*~
+**/.history/**
+
+# Build / compilation artifacts
+**/build/**
+**/dist/**
+**/dist-ssr/**
+**/out/**
+**/target/**
+**/sdist/**
+**/wheels/**
+**/*.o
+**/*.obj
+**/*.so
+**/*.so.*
+**/*.dylib
+**/*.dll
+**/*.exe
+**/*.a
+**/*.lib
+**/*.pyc
+**/*.pyo
+**/*.class
+**/*.tsbuildinfo
+
+# Test / generated reports
+**/test-results/**
+**/playwright-report/**
+**/TEST-results.xml
+**/nosetests.xml
+
+# dbt generated artifacts
+**/dbt_packages/**
+**/dbt_modules/**
+**/dbt/logs/**
+**/dbt/target/**
+**/logs/dbt.log*
+**/.dbt_dag.sqlite
+
+# Generic caches / temp
+**/.cache/**
+**/.cache-loader/**
+**/.sass-cache/**
+**/.postcss-cache/**
+**/.serverless/**
+**/.jekyll-cache/**
+**/.webassets-cache/**
+**/.scrapy/**
+**/.ropeproject/**
+**/tmp/**
+**/.temp/**
+**/*.tmp
+**/*.pid
+**/*.pid.lock
+
+# Logs
+**/*.log
+**/logs/**
+
+# Local database runtime files
+**/*.sqlite-journal
+**/*.db-journal
+
+# OS/editor backup files
+**/*.bak
+**/*.old
+**/.#*
+**/#*#
+
+# Misc
+**/debug_pipe
